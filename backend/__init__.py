@@ -1,0 +1,1 @@
+"""Spendsight backend."""
