@@ -1,5 +1,27 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Dashboard</h1>
-<p>{{ transactions|length }} transactions</p>
+<h1>Spending Dashboard</h1>
+
+<div class="stats">
+    <div class="stat">
+        <span class="label">Total Spent</span>
+        <span class="value">${{ "%.2f"|format(total_spent) }}</span>
+    </div>
+    <div class="stat">
+        <span class="label">Transactions</span>
+        <span class="value">{{ transactions|length }}</span>
+    </div>
+</div>
+
+<h2>By Category</h2>
+<div class="categories">
+{% for cat, amount in categories.items() %}
+    <div class="category-row">
+        <span>{{ cat }}</span>
+        <span>${{ "%.2f"|format(amount) }}</span>
+    </div>
+{% endfor %}
+</div>
+
+<p><a href="/upload">Upload more</a></p>
 {% endblock %}

@@ -1,9 +1,10 @@
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
 from werkzeug.utils import secure_filename
 from backend.config import Config
 from backend.parsers.chase_parser import ChaseParser
 from backend.parsers.discover_parser import DiscoverParser
 from backend.parsers.csv_detector import CSVDetector, CSVType
+from backend.analytics.categorizer import TransactionCategorizer
 
 app = Flask(__name__,
             template_folder='../frontend/templates',
@@ -19,9 +20,13 @@ def index():
     if not all_transactions:
         return redirect(url_for('upload'))
     
-    total = sum(abs(t.amount) for t in all_transactions if t.is_expense)
-    return render_template('index.html', 
+    expenses = [t for t in all_transactions if t.is_expense]
+    categories = TransactionCategorizer.by_category(expenses)
+    total = sum(abs(t.amount) for t in expenses)
+    
+    return render_template('index.html',
                           transactions=all_transactions,
+                          categories=categories,
                           total_spent=total)
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -46,13 +51,27 @@ def upload():
             elif csv_type == CSVType.DISCOVER:
                 txns = DiscoverParser.parse(str(path))
             else:
-                flash(f'Unknown format: {file.filename}', 'warning')
+                flash(f'Unknown: {file.filename}', 'warning')
                 continue
             
             all_transactions.extend(txns)
-            flash(f'{file.filename}: {len(txns)} transactions')
+            flash(f'{len(txns)} transactions loaded')
         
         if all_transactions:
             return redirect(url_for('index'))
     
     return render_template('upload.html')
+
+@app.route('/api/transactions')
+def api_transactions():
+    return jsonify([{
+        'date': t.transaction_date.strftime('%Y-%m-%d'),
+        'description': t.description,
+        'amount': t.amount,
+        'category': t.category
+    } for t in all_transactions])
+
+@app.route('/api/categories')
+def api_categories():
+    expenses = [t for t in all_transactions if t.is_expense]
+    return jsonify(TransactionCategorizer.by_category(expenses))
