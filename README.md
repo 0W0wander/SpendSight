@@ -6,8 +6,7 @@ Spendsight helps you understand where your money goes by importing bank CSV expo
 
 ## Demo
 
-<!-- Add demo video/gif here -->
-*Demo coming soon*
+[![Watch the demo video](https://img.youtube.com/vi/rww2Yisol34/maxresdefault.jpg)](https://youtu.be/rww2Yisol34)
 
 ---
 
